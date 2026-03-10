@@ -1,0 +1,4 @@
+instance/premium_rental.db
+uploads/
+__pycache__/
+*.pyc
