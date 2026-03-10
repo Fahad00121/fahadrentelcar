@@ -232,68 +232,74 @@ class AccountTransaction(db.Model):
     notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# Create tables and add sample data if needed
-try:
-    with app.app_context():
-        db.create_all()
-        
-        # Check if Car table is empty
-        if Car.query.count() == 0:
-            sample_cars = [
-                Car(name='Toyota Innova', model='2024', price_per_day=15000, km_per_day=100, category='suv', seats=7, image='default_car.jpg'),
-                Car(name='Honda City', model='2024', price_per_day=10000, km_per_day=100, category='sedan', seats=5, image='default_car.jpg'),
-                Car(name='Hyundai Creta', model='2024', price_per_day=12000, km_per_day=100, category='suv', seats=5, image='default_car.jpg'),
-                Car(name='Mahindra Thar', model='2024', price_per_day=18000, km_per_day=120, category='suv', seats=4, image='default_car.jpg'),
-                Car(name='Toyota Fortuner', model='2024', price_per_day=25000, km_per_day=150, category='luxury', seats=7, image='default_car.jpg'),
-                Car(name='Mercedes Benz', model='2024', price_per_day=45000, km_per_day=200, category='luxury', seats=5, image='default_car.jpg'),
-                Car(name='BMW X5', model='2024', price_per_day=40000, km_per_day=200, category='luxury', seats=5, image='default_car.jpg'),
-                Car(name='Audi Q7', model='2024', price_per_day=42000, km_per_day=200, category='luxury', seats=7, image='default_car.jpg')
-            ]
-            db.session.add_all(sample_cars)
-            db.session.commit()
-            logger.info("Sample cars added to database")
-        
-        # Check if Banner table is empty - add default banner
-        if Banner.query.count() == 0:
-            default_banner = Banner(
-                title=f'{app.config["BRAND_NAME"]}',
-                subtitle='Experience luxury with our premium fleet. Best prices, guaranteed!',
-                image='default_banner.jpg',
-                offer_text='SPECIAL OFFER',
-                km_offer=300,
-                price_offer='Rs. 15,000/=',
-                is_active=True
-            )
-            db.session.add(default_banner)
-            db.session.commit()
-            logger.info("Default banner added to database")
-except Exception as e:
-    logger.error(f"Error during database initialization: {e}")
-    
-    # Check if Background table is empty - add default background
-    if Background.query.count() == 0:
-        default_background = Background(
-            image='default_bg.jpg',
-            title=app.config["BRAND_NAME"],
-            description=app.config["BRAND_SLOGAN"]
-        )
-        db.session.add(default_background)
-        db.session.commit()
-        logger.info("Default background added to database")
-    
-    # Check if Hero table is empty - add default hero
-    if Hero.query.count() == 0:
-        default_hero = Hero(
-            image='default_hero.jpg',
-            title=app.config["BRAND_NAME"],
-            subtitle='Experience luxury with our premium fleet. Best prices, guaranteed!',
-            overlay_opacity=0.6,
-            overlay_color='0,0,0',
-            is_active=True
-        )
-        db.session.add(default_hero)
-        db.session.commit()
-        logger.info("Default hero added to database")
+def _init_db_if_possible():
+    """
+    Serverless-safe DB init.
+    - Always runs inside app context.
+    - If DB config/driver is missing (common on Vercel), it logs and continues
+      instead of crashing the whole function import.
+    """
+    try:
+        with app.app_context():
+            db.create_all()
+
+            # Seed minimal defaults only when tables are empty.
+            if Car.query.count() == 0:
+                sample_cars = [
+                    Car(name='Toyota Innova', model='2024', price_per_day=15000, km_per_day=100, category='suv', seats=7, image='default_car.jpg'),
+                    Car(name='Honda City', model='2024', price_per_day=10000, km_per_day=100, category='sedan', seats=5, image='default_car.jpg'),
+                    Car(name='Hyundai Creta', model='2024', price_per_day=12000, km_per_day=100, category='suv', seats=5, image='default_car.jpg'),
+                    Car(name='Mahindra Thar', model='2024', price_per_day=18000, km_per_day=120, category='suv', seats=4, image='default_car.jpg'),
+                    Car(name='Toyota Fortuner', model='2024', price_per_day=25000, km_per_day=150, category='luxury', seats=7, image='default_car.jpg'),
+                    Car(name='Mercedes Benz', model='2024', price_per_day=45000, km_per_day=200, category='luxury', seats=5, image='default_car.jpg'),
+                    Car(name='BMW X5', model='2024', price_per_day=40000, km_per_day=200, category='luxury', seats=5, image='default_car.jpg'),
+                    Car(name='Audi Q7', model='2024', price_per_day=42000, km_per_day=200, category='luxury', seats=7, image='default_car.jpg')
+                ]
+                db.session.add_all(sample_cars)
+                db.session.commit()
+                logger.info("Sample cars added to database")
+
+            if Banner.query.count() == 0:
+                default_banner = Banner(
+                    title=f'{app.config["BRAND_NAME"]}',
+                    subtitle='Experience luxury with our premium fleet. Best prices, guaranteed!',
+                    image='default_banner.jpg',
+                    offer_text='SPECIAL OFFER',
+                    km_offer=300,
+                    price_offer='Rs. 15,000/=',
+                    is_active=True
+                )
+                db.session.add(default_banner)
+                db.session.commit()
+                logger.info("Default banner added to database")
+
+            if Background.query.count() == 0:
+                default_background = Background(
+                    image='default_bg.jpg',
+                    title=app.config["BRAND_NAME"],
+                    description=app.config["BRAND_SLOGAN"]
+                )
+                db.session.add(default_background)
+                db.session.commit()
+                logger.info("Default background added to database")
+
+            if Hero.query.count() == 0:
+                default_hero = Hero(
+                    image='default_hero.jpg',
+                    title=app.config["BRAND_NAME"],
+                    subtitle='Experience luxury with our premium fleet. Best prices, guaranteed!',
+                    overlay_opacity=0.6,
+                    overlay_color='0,0,0',
+                    is_active=True
+                )
+                db.session.add(default_hero)
+                db.session.commit()
+                logger.info("Default hero added to database")
+    except Exception:
+        logger.exception("Database initialization skipped (config/driver/runtime issue).")
+
+
+_init_db_if_possible()
 
 # ==============================
 # FORM VALIDATION (Sri Lankan Phone Number)

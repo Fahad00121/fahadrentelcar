@@ -2,7 +2,9 @@ Flask
 Flask-SQLAlchemy
 Flask-WTF
 WTForms
+email-validator
 twilio
 python-dotenv
 gunicorn
+psycopg2-binary
 
