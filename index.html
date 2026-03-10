@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fahad Premium Rentals - Luxury Car Rental in Sri Lanka</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Fahad Premium Rentals - Luxury and premium car rentals in Sri Lanka. Daily, weekly and monthly rentals with drivers." />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #0f172a;
+      background: #0b1120;
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    .page {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1d4ed8 0, transparent 45%),
+                  radial-gradient(circle at bottom, #0ea5e9 0, transparent 55%),
+                  #020617;
+      color: #e5e7eb;
+    }
+    header {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #2563eb, #22d3ee);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      font-size: 1rem;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.6);
+    }
+    .brand-text h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .brand-text p {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+    .nav-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .btn {
+      border-radius: 999px;
+      padding: 0.55rem 1.25rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      background: transparent;
+      color: #e5e7eb;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #22d3ee);
+      color: #0f172a;
+      box-shadow: 0 12px 30px rgba(37, 99, 235, 0.7);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 16px 40px rgba(37, 99, 235, 0.9); }
+    .btn-outline {
+      border-color: rgba(148, 163, 184, 0.6);
+      background-color: rgba(15, 23, 42, 0.6);
+    }
+    .btn-outline:hover {
+      background-color: rgba(30, 64, 175, 0.6);
+      border-color: #60a5fa;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 2.5rem;
+      align-items: center;
+    }
+    @media (max-width: 768px) {
+      main { grid-template-columns: minmax(0, 1fr); padding-top: 0.5rem; }
+      header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    }
+    .hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.8);
+      color: #9ca3af;
+      font-size: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .hero-kicker span.badge {
+      background: #22c55e33;
+      color: #bbf7d0;
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      border: 1px solid #22c55e66;
+    }
+    .hero-title {
+      font-size: clamp(2rem, 3.1vw + 1rem, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 0.75rem;
+      color: #f9fafb;
+    }
+    .hero-title span.highlight {
+      background: linear-gradient(135deg, #fbbf24, #f97316);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero-subtitle {
+      font-size: 0.98rem;
+      color: #d1d5db;
+      max-width: 34rem;
+      margin-bottom: 1.25rem;
+    }
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 1.75rem;
+    }
+    .hero-meta strong { color: #e5e7eb; font-weight: 600; }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.75rem;
+    }
+    .hero-note {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      max-width: 28rem;
+    }
+    .hero-note strong { color: #e5e7eb; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .stat-card {
+      background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.3), transparent 55%),
+                  rgba(15, 23, 42, 0.8);
+      border-radius: 1rem;
+      padding: 0.9rem;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      backdrop-filter: blur(10px);
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-bottom: 0.25rem;
+    }
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f9fafb;
+      margin-bottom: 0.1rem;
+    }
+    .stat-helper {
+      font-size: 0.72rem;
+      color: #6b7280;
+    }
+
+    .hero-card {
+      position: relative;
+      border-radius: 1.5rem;
+      background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.5), transparent 50%),
+                  radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.45), transparent 50%),
+                  rgba(15, 23, 42, 0.95);
+      padding: 1.6rem 1.4rem;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      box-shadow: 0 30px 70px rgba(15, 23, 42, 0.85);
+      overflow: hidden;
+    }
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      font-size: 0.7rem;
+      color: #e5e7eb;
+      margin-bottom: 1rem;
+    }
+    .hero-pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #4ade80;
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.9);
+    }
+    .car-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+      color: #f9fafb;
+    }
+    .car-subtitle {
+      font-size: 0.8rem;
+      color: #d1d5db;
+      margin-bottom: 1rem;
+    }
+    .car-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.7rem;
+    }
+    .car-badge {
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      color: #e5e7eb;
+    }
+    .car-badge.primary {
+      border-color: rgba(37, 99, 235, 0.9);
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(14, 165, 233, 0.8));
+      color: #f9fafb;
+    }
+
+    .car-main {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .car-photo {
+      flex: 1.3;
+      position: relative;
+      border-radius: 1rem;
+      overflow: hidden;
+      background: radial-gradient(circle at top left, #1e293b, #030712);
+      height: 190px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .car-photo-inner {
+      position: absolute;
+      inset: 12% 6% 6%;
+      border-radius: 1.1rem;
+      background: linear-gradient(135deg, #020617, #0b1120 45%, #020617 80%);
+      overflow: hidden;
+      box-shadow: 0 25px 55px rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+    }
+    .roadline {
+      position: absolute;
+      bottom: 20%;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: repeating-linear-gradient(90deg, transparent 0 12px, rgba(148, 163, 184, 0.7) 12px 22px);
+      opacity: 0.8;
+    }
+    .car-shape {
+      position: absolute;
+      bottom: 18%;
+      left: 7%;
+      right: 7%;
+      height: 52%;
+      border-radius: 999px;
+      background: radial-gradient(circle at 15% 10%, #f9fafb 0, #d1d5db 20%, #4b5563 60%, #020617 100%);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+    .car-roof {
+      position: absolute;
+      inset: 25% 20% 38%;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7));
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+    }
+    .car-glass {
+      position: absolute;
+      inset: 26.5% 24% 43%;
+      border-radius: 999px;
+      background: radial-gradient(circle at 10% 0, rgba(248, 250, 252, 0.7), transparent 55%),
+                  linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 64, 175, 0.7));
+      opacity: 0.95;
+    }
+    .wheel {
+      position: absolute;
+      bottom: 15%;
+      width: 26%;
+      aspect-ratio: 1;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #e5e7eb 0, #9ca3af 20%, #020617 65%, #0f172a 100%);
+      box-shadow: 0 15px 25px rgba(15, 23, 42, 0.9);
+      border: 2px solid rgba(15, 23, 42, 0.9);
+    }
+    .wheel.left { left: 17%; }
+    .wheel.right { right: 17%; }
+    .wheel-inner {
+      position: absolute;
+      inset: 18%;
+      border-radius: 999px;
+      background: conic-gradient(from 0deg, #0f172a 0 18deg, #9ca3af 18deg 22deg, #0f172a 22deg 36deg, #9ca3af 36deg 40deg, #0f172a 40deg 54deg, #9ca3af 54deg 58deg, #0f172a 58deg 72deg, #9ca3af 72deg 76deg, #0f172a 76deg 90deg, #9ca3af 90deg 94deg, #0f172a 94deg 360deg);
+    }
+    .light {
+      position: absolute;
+      bottom: 30%;
+      width: 7%;
+      height: 10%;
+      border-radius: 50% 30% 30% 50% / 60% 50% 50% 40%;
+      background: radial-gradient(circle at 0 50%, #fef3c7 0, #facc15 25%, rgba(251, 191, 36, 0.1) 90%);
+      filter: blur(0.2px);
+    }
+    .light.left {
+      left: 12%;
+      transform: scaleX(-1);
+    }
+    .light.right {
+      right: 12%;
+    }
+    .glow-orb {
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(129, 140, 248, 0.9) 0, transparent 60%);
+      top: -30px;
+      right: -20px;
+      opacity: 0.7;
+      filter: blur(1px);
+    }
+    .glow-orb.secondary {
+      width: 90px;
+      height: 90px;
+      left: -25px;
+      bottom: 0;
+      background: radial-gradient(circle, rgba(45, 212, 191, 0.85) 0, transparent 60%);
+      opacity: 0.6;
+    }
+    .car-info {
+      flex: 1;
+      font-size: 0.8rem;
+    }
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      margin-bottom: 0.4rem;
+    }
+    .price-main {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #f9fafb;
+    }
+    .price-tag {
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+    .price-note {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      margin-bottom: 0.75rem;
+    }
+    .feature-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.3rem 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .feature-list li {
+      font-size: 0.78rem;
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .feature-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #38bdf8;
+    }
+    .availability {
+      font-size: 0.75rem;
+      color: #a5b4fc;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-bottom: 0.9rem;
+    }
+    .availability span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.9);
+    }
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.75rem;
+      font-size: 0.7rem;
+      color: #9ca3af;
+    }
+    .chip {
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.85);
+    }
+
+    section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.25rem 2.5rem;
+    }
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #e5e7eb;
+      margin-bottom: 0.75rem;
+    }
+    .section-subtitle {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-bottom: 1.25rem;
+      max-width: 34rem;
+    }
+    .simple-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+    @media (max-width: 768px) {
+      .simple-grid { grid-template-columns: minmax(0, 1fr); }
+    }
+    .simple-card {
+      border-radius: 1rem;
+      padding: 1rem;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      font-size: 0.85rem;
+      color: #d1d5db;
+    }
+    .simple-card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      color: #e5e7eb;
+    }
+    .simple-card p { margin-bottom: 0.2rem; }
+
+    footer {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(31, 41, 55, 0.9);
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand">
+        <div class="brand-mark">FR</div>
+        <div class="brand-text">
+          <h1>Fahad Premium Rentals</h1>
+          <p>Luxury Car Rental · Sri Lanka</p>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <a class="btn btn-outline" href="#fleet">Our Fleet</a>
+        <a class="btn btn-primary" href="https://wa.me/94756656862?text=Hello%20Fahad%20Rentals,%20I%20want%20to%20book%20a%20car.">
+          Book on WhatsApp
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <div>
+        <div class="hero-kicker">
+          <span class="badge">Sri Lanka</span>
+          Premium airport transfers & chauffeur-driven cars
+        </div>
+        <h2 class="hero-title">
+          Luxury cars for your <span class="highlight">wedding, airport, and business trips</span>.
+        </h2>
+        <p class="hero-subtitle">
+          Fahad Premium Rentals offers high–end cars with professional drivers for airport pickups, weddings,
+          VIP transfers, and city tours across Sri Lanka. Transparent pricing in rupees, no hidden charges.
+        </p>
+        <div class="hero-meta">
+          <div><strong>Location:</strong> Colombo, Sri Lanka</div>
+          <div><strong>Service hours:</strong> 24/7 on request</div>
+          <div><strong>Currency:</strong> Rs. (LKR)</div>
+        </div>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="https://wa.me/94756656862?text=Hello%20Fahad%20Rentals,%20I%20want%20to%20book%20a%20car.">
+            WhatsApp Now
+          </a>
+          <a class="btn btn-outline" href="tel:+94756656862">
+            Call +94 75 665 6862
+          </a>
+        </div>
+        <p class="hero-note">
+          <strong>How to book:</strong> Send your pickup location, date, time, and car type on WhatsApp.
+          We’ll confirm availability and price in Sri Lankan Rupees.
+        </p>
+
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-label">Daily rentals from</div>
+            <div class="stat-value">Rs. 15,000/=</div>
+            <div class="stat-helper">Within Colombo city limits</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Airport transfer</div>
+            <div class="stat-value">Rs. 18,000/=</div>
+            <div class="stat-helper">Bandaranaike Intl. Airport pickup/drop</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Wedding packages</div>
+            <div class="stat-value">Custom quote</div>
+            <div class="stat-helper">Decor, driver, photo time included</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="hero-card">
+          <div class="glow-orb"></div>
+          <div class="glow-orb secondary"></div>
+
+          <div class="hero-pill">
+            <span class="hero-pill-dot"></span>
+            Featured Luxury Car · Available today
+          </div>
+
+          <div class="car-name">Mercedes-Benz E-Class (or similar)</div>
+          <div class="car-subtitle">Perfect for airport transfers & business guests.</div>
+
+          <div class="car-badges">
+            <div class="car-badge primary">With driver</div>
+            <div class="car-badge">A/C · Leather seats</div>
+            <div class="car-badge">Up to 3 passengers</div>
+          </div>
+
+          <div class="car-main">
+            <div class="car-photo">
+              <div class="car-photo-inner">
+                <div class="roadline"></div>
+                <div class="car-shape"></div>
+                <div class="car-roof"></div>
+                <div class="car-glass"></div>
+                <div class="wheel left"><div class="wheel-inner"></div></div>
+                <div class="wheel right"><div class="wheel-inner"></div></div>
+                <div class="light left"></div>
+                <div class="light right"></div>
+              </div>
+            </div>
+            <div class="car-info">
+              <div class="price-row">
+                <div class="price-main">Rs. 22,000/=</div>
+                <div class="price-tag">Airport pickup (Colombo)</div>
+              </div>
+              <div class="price-note">
+                Includes driver, fuel (standard route), and waiting time at the terminal.
+              </div>
+              <ul class="feature-list">
+                <li><span class="feature-dot"></span>Professional English-speaking driver</li>
+                <li><span class="feature-dot"></span>Clean, fully A/C luxury interior</li>
+                <li><span class="feature-dot"></span>Airport meet & greet service</li>
+                <li><span class="feature-dot"></span>24/7 support on WhatsApp</li>
+              </ul>
+              <div class="availability">
+                <span class="dot"></span>
+                Same-day bookings usually available · Best to book 24 hours in advance
+              </div>
+              <div class="card-actions">
+                <a class="btn btn-primary" href="https://wa.me/94756656862?text=Hello%20Fahad%20Rentals,%20I%20want%20to%20book%20a%20Mercedes%20airport%20transfer.">
+                  Reserve on WhatsApp
+                </a>
+                <a class="btn btn-outline" href="#fleet">
+                  View more cars
+                </a>
+              </div>
+              <div class="chip-row">
+                <span class="chip">Colombo · Negombo · Kandy</span>
+                <span class="chip">Business travel</span>
+                <span class="chip">Weddings & events</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <section id="fleet">
+      <h2 class="section-title">Popular rental options</h2>
+      <p class="section-subtitle">
+       Choose from economy, premium, and luxury vehicles. All rentals include a professional driver
+        and full A/C comfort. Prices are approximate; final quote depends on route, time, and date.
+      </p>
+
+      <div class="simple-grid">
+        <div class="simple-card">
+          <h3>Economy Sedan</h3>
+          <p><strong>From Rs. 12,000/= per day</strong></p>
+          <p>Ideal for city trips and short distances.</p>
+          <p>Seats: 3 passengers · A/C · Clean & comfortable.</p>
+        </div>
+        <div class="simple-card">
+          <h3>Premium Sedan</h3>
+          <p><strong>From Rs. 18,000/= per day</strong></p>
+          <p>Perfect for airport transfers and business guests.</p>
+          <p>Seats: 3 passengers · Extra legroom · Luxury interior.</p>
+        </div>
+        <div class="simple-card">
+          <h3>Luxury Wedding Car</h3>
+          <p><strong>Custom packages</strong></p>
+          <p>Decorated car with driver for full event duration.</p>
+          <p>Photo stops & city drive included on request.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <h2 class="section-title">Contact & booking</h2>
+      <p class="section-subtitle">
+       To book, please send us a WhatsApp message with your pickup location, date, time,
+        number of passengers, and car type. We will reply with availability and price.
+      </p>
+
+      <div class="simple-grid">
+        <div class="simple-card">
+          <h3>WhatsApp (recommended)</h3>
+          <p><strong>Number:</strong> +94 75 665 6862</p>
+          <p>
+            <a href="https://wa.me/94756656862?text=Hello%20Fahad%20Rentals,%20I%20want%20to%20book%20a%20car.">
+              Click here to open WhatsApp chat
+            </a>
+          </p>
+        </div>
+        <div class="simple-card">
+          <h3>Phone call</h3>
+          <p><strong>Call:</strong> <a href="tel:+94756656862">+94 75 665 6862</a></p>
+          <p>Available daily. For urgent or same-day bookings, please call.</p>
+        </div>
+        <div class="simple-card">
+          <h3>Service area</h3>
+          <p>Based in Colombo, Sri Lanka.</p>
+          <p>We cover airport, Colombo, Negombo, Kandy, and other major cities on request.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div>© <span id="year"></span> Fahad Premium Rentals. All rights reserved.</div>
+      <div>Luxury Car Rental · Sri Lanka · LKR (Rs.)</div>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
