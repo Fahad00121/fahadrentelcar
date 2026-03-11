@@ -39,6 +39,12 @@ class Config:
     BANNER_ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     HERO_ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     
+    # Cloudinary (recommended for Vercel; enables large direct-to-cloud uploads)
+    CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "")
+    # Create an UNSIGNED upload preset in Cloudinary dashboard and put it here.
+    CLOUDINARY_UPLOAD_PRESET = os.environ.get("CLOUDINARY_UPLOAD_PRESET", "")
+    CLOUDINARY_FOLDER = os.environ.get("CLOUDINARY_FOLDER", "premium-rentals")
+    
     # Currency settings - SRI LANKAN RUPEES
     CURRENCY_SYMBOL = 'Rs.'
     CURRENCY_CODE = 'LKR'
@@ -127,6 +133,43 @@ def generate_tracking_number():
     
     # Format with leading zeros (5 digits)
     return f"FR{new_num:05d}"
+
+
+# ==============================
+# MEDIA URL HELPERS (local or full URL)
+# ==============================
+_HTTP_URL_RE = re.compile(r"^https?://", re.IGNORECASE)
+
+
+def is_http_url(value):
+    return bool(value) and bool(_HTTP_URL_RE.match(str(value)))
+
+
+def media_url(value, kind: str) -> str:
+    """
+    Returns a usable URL for either:
+    - full http(s) URL stored in DB (Cloudinary/CDN/etc)
+    - local filename stored in DB (served via our Flask routes)
+    """
+    if not value:
+        return ""
+    if is_http_url(value):
+        return str(value)
+
+    if kind == "car":
+        return url_for("car_image", filename=value)
+    if kind == "hero":
+        return url_for("hero_image", filename=value)
+    if kind == "banner":
+        return url_for("banner_image", filename=value)
+    if kind == "background":
+        return url_for("background_image")
+    if kind == "upload":
+        return url_for("uploaded_file", filename=value)
+    return str(value)
+
+
+app.jinja_env.globals["media_url"] = media_url
 
 # ==============================
 # DATABASE MODELS
@@ -708,7 +751,7 @@ def index():
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <!-- Hero Section with Dynamic Background -->
-                <div class="glass-card mb-5" style="position: relative; overflow: hidden; background-image: url('{{ url_for('hero_image', filename=hero.image) }}'); background-size: cover; background-position: center;">
+                <div class="glass-card mb-5" style="position: relative; overflow: hidden; background-image: url('{{ media_url(hero.image, 'hero') }}'); background-size: cover; background-position: center;">
                     <div style="background: rgba({{ hero.overlay_color }}, {{ hero.overlay_opacity }}); padding: 60px 30px; border-radius: 20px;">
                         <div class="text-center text-white">
                             {% if active_banner %}
@@ -779,7 +822,7 @@ def index():
                                 <div class="car-card" onclick="selectCar('{{ car.name }} {{ car.model }}', {{ car.price_per_day }})">
                                     <div class="car-image">
                                         {% if car.image and car.image != 'default_car.jpg' %}
-                                            <img src="{{ url_for('car_image', filename=car.image) }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ car.name }}">
+                                            <img src="{{ media_url(car.image, 'car') }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ car.name }}">
                                         {% else %}
                                             <i class="fas fa-car"></i>
                                         {% endif %}
@@ -820,6 +863,10 @@ def index():
                         
                         <form method="POST" action="{{ url_for('book') }}" enctype="multipart/form-data" id="bookingForm">
                             {{ form.hidden_tag() }}
+                            <!-- Cloudinary URLs (used on Vercel to avoid large request bodies) -->
+                            <input type="hidden" name="id_front_url" id="id_front_url">
+                            <input type="hidden" name="id_back_url" id="id_back_url">
+                            <input type="hidden" name="license_url" id="license_url">
                             
                             <div class="row">
                                 <div class="col-md-6 mb-3">
@@ -1186,6 +1233,52 @@ def index():
                 if (pickupDate && returnDate && carSelect && pickupDate.value && returnDate.value && carSelect.value) {
                     calculateTotal();
                 }
+
+                // Direct-to-Cloudinary upload (recommended on Vercel)
+                const CLOUDINARY_CLOUD_NAME = {{ cloudinary_cloud_name|tojson }};
+                const CLOUDINARY_UPLOAD_PRESET = {{ cloudinary_upload_preset|tojson }};
+                const CLOUDINARY_FOLDER = {{ cloudinary_folder|tojson }};
+
+                async function uploadToCloudinary(file) {
+                    const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                    if (CLOUDINARY_FOLDER) formData.append('folder', CLOUDINARY_FOLDER);
+                    const res = await fetch(endpoint, { method: 'POST', body: formData });
+                    if (!res.ok) throw new Error('Cloud upload failed');
+                    const data = await res.json();
+                    if (!data.secure_url) throw new Error('Cloud upload missing URL');
+                    return data.secure_url;
+                }
+
+                async function maybeUploadAndSetUrl(fileInputId, urlInputId) {
+                    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) return;
+                    const fileInput = document.getElementById(fileInputId);
+                    const urlInput = document.getElementById(urlInputId);
+                    if (!fileInput || !urlInput) return;
+                    if (!fileInput.files || fileInput.files.length === 0) return;
+                    const url = await uploadToCloudinary(fileInput.files[0]);
+                    urlInput.value = url;
+                    // Clear file so Vercel doesn't receive big body
+                    fileInput.value = '';
+                }
+
+                const bookingForm = document.getElementById('bookingForm');
+                if (bookingForm) {
+                    bookingForm.addEventListener('submit', async function (e) {
+                        if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) return;
+                        e.preventDefault();
+                        try {
+                            await maybeUploadAndSetUrl('id_front', 'id_front_url');
+                            await maybeUploadAndSetUrl('id_back', 'id_back_url');
+                            await maybeUploadAndSetUrl('license_file', 'license_url');
+                            bookingForm.submit();
+                        } catch (err) {
+                            alert('Upload failed. Please try again (or compress your files).');
+                        }
+                    });
+                }
             });
         </script>
         '''
@@ -1199,7 +1292,10 @@ def index():
                                         hero=hero,
                                         brand_name=app.config['BRAND_NAME'],
                                         brand_slogan=app.config['BRAND_SLOGAN'],
-                                        format_currency_simple=format_currency_simple)
+                                        format_currency_simple=format_currency_simple,
+                                        cloudinary_cloud_name=app.config.get("CLOUDINARY_CLOUD_NAME", ""),
+                                        cloudinary_upload_preset=app.config.get("CLOUDINARY_UPLOAD_PRESET", ""),
+                                        cloudinary_folder=app.config.get("CLOUDINARY_FOLDER", ""))
         return render_template_string(BASE_TEMPLATE, content=content, background=background, brand_name=app.config['BRAND_NAME'], format_currency=format_currency, format_currency_simple=format_currency_simple)
     except Exception as e:
         logger.error(f"Error in index route: {str(e)}")
@@ -1279,51 +1375,64 @@ def book():
         
         if form.validate_on_submit():
             logger.info("Form validation passed")
-            
-            # Get files
-            id_front_file = request.files['id_front']
-            id_back_file = request.files['id_back']
-            license_file = request.files['license_file']
-            
-            logger.info(f"Files received: {id_front_file.filename}, {id_back_file.filename}, {license_file.filename}")
-            
-            # Check if files are empty
-            if id_front_file.filename == '' or id_back_file.filename == '' or license_file.filename == '':
-                flash('All files are required', 'danger')
-                return redirect(url_for('index'))
-            
-            # Check file extensions
-            if not (allowed_file(id_front_file.filename) and allowed_file(id_back_file.filename) and allowed_file(license_file.filename)):
-                flash('Invalid file type. Allowed: jpg, jpeg, png, pdf', 'danger')
-                return redirect(url_for('index'))
-            
-            # Check file sizes
-            max_size = app.config['MAX_CONTENT_LENGTH']
-            for file, name in [(id_front_file, 'ID Front'), (id_back_file, 'ID Back'), (license_file, 'License')]:
-                # Check by seeking to end
-                file.seek(0, os.SEEK_END)
-                size = file.tell()
-                file.seek(0)  # Reset file pointer
-                if size > max_size:
-                    flash(f'❌ {name} file too large. Maximum size is {max_size // (1024*1024)}MB', 'danger')
+
+            # Prefer Cloudinary direct-upload URLs (for Vercel). Fallback to local files.
+            id_front_url = (request.form.get("id_front_url") or "").strip()
+            id_back_url = (request.form.get("id_back_url") or "").strip()
+            license_url = (request.form.get("license_url") or "").strip()
+
+            if id_front_url and id_back_url and license_url:
+                id_front_value = id_front_url
+                id_back_value = id_back_url
+                license_value = license_url
+            else:
+                # Get files (local fallback)
+                id_front_file = request.files['id_front']
+                id_back_file = request.files['id_back']
+                license_file = request.files['license_file']
+
+                logger.info(f"Files received: {id_front_file.filename}, {id_back_file.filename}, {license_file.filename}")
+
+                # Check if files are empty
+                if id_front_file.filename == '' or id_back_file.filename == '' or license_file.filename == '':
+                    flash('All files are required', 'danger')
                     return redirect(url_for('index'))
-            
-            # Secure filenames
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            id_front_filename = secure_filename(f"{timestamp}_front_{id_front_file.filename}")
-            id_back_filename = secure_filename(f"{timestamp}_back_{id_back_file.filename}")
-            license_filename = secure_filename(f"{timestamp}_license_{license_file.filename}")
-            
-            # Save files
-            id_front_path = os.path.join(app.config['UPLOAD_FOLDER'], id_front_filename)
-            id_back_path = os.path.join(app.config['UPLOAD_FOLDER'], id_back_filename)
-            license_path = os.path.join(app.config['UPLOAD_FOLDER'], license_filename)
-            
-            id_front_file.save(id_front_path)
-            id_back_file.save(id_back_path)
-            license_file.save(license_path)
-            
-            logger.info(f"Files saved: {id_front_path}, {id_back_path}, {license_path}")
+
+                # Check file extensions
+                if not (allowed_file(id_front_file.filename) and allowed_file(id_back_file.filename) and allowed_file(license_file.filename)):
+                    flash('Invalid file type. Allowed: jpg, jpeg, png, pdf', 'danger')
+                    return redirect(url_for('index'))
+
+                # Check file sizes
+                max_size = app.config['MAX_CONTENT_LENGTH']
+                for file, name in [(id_front_file, 'ID Front'), (id_back_file, 'ID Back'), (license_file, 'License')]:
+                    file.seek(0, os.SEEK_END)
+                    size = file.tell()
+                    file.seek(0)
+                    if size > max_size:
+                        flash(f'❌ {name} file too large. Maximum size is {max_size // (1024*1024)}MB', 'danger')
+                        return redirect(url_for('index'))
+
+                # Secure filenames
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                id_front_filename = secure_filename(f"{timestamp}_front_{id_front_file.filename}")
+                id_back_filename = secure_filename(f"{timestamp}_back_{id_back_file.filename}")
+                license_filename = secure_filename(f"{timestamp}_license_{license_file.filename}")
+
+                # Save files
+                id_front_path = os.path.join(app.config['UPLOAD_FOLDER'], id_front_filename)
+                id_back_path = os.path.join(app.config['UPLOAD_FOLDER'], id_back_filename)
+                license_path = os.path.join(app.config['UPLOAD_FOLDER'], license_filename)
+
+                id_front_file.save(id_front_path)
+                id_back_file.save(id_back_path)
+                license_file.save(license_path)
+
+                logger.info(f"Files saved: {id_front_path}, {id_back_path}, {license_path}")
+
+                id_front_value = id_front_filename
+                id_back_value = id_back_filename
+                license_value = license_filename
             
             # Get car price (robust parsing of name + model)
             car_model_value = form.car_model.data  # e.g. "Toyota Innova 2024"
@@ -1381,9 +1490,9 @@ def book():
                 amount_paid=0,
                 balance_due=int(total_price),
                 payment_status='pending',
-                id_front=id_front_filename,
-                id_back=id_back_filename,
-                license_file=license_filename,
+                id_front=id_front_value,
+                id_back=id_back_value,
+                license_file=license_value,
                 status='pending'
             )
             
@@ -3123,7 +3232,7 @@ def admin_hero():
                     <!-- Current Hero Preview -->
                     <div class="text-center mb-4">
                         <h5>Current Hero Background:</h5>
-                        <div style="width: 100%; height: 200px; background: url('{{ url_for('hero_image', filename=hero.image) }}') no-repeat center center; background-size: cover; border-radius: 10px; border: 3px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative;">
+                        <div style="width: 100%; height: 200px; background: url('{{ media_url(hero.image, 'hero') }}') no-repeat center center; background-size: cover; border-radius: 10px; border: 3px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative;">
                             <div style="background: rgba({{ hero.overlay_color }}, {{ hero.overlay_opacity }}); width: 100%; height: 100%; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
                                 <div style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
                                     <h3>{{ hero.title or brand_name }}</h3>
@@ -3493,7 +3602,7 @@ def admin_banners():
                                     <td>{{ banner.id }}</td>
                                     <td>
                                         {% if banner.image and banner.image != 'default_banner.jpg' %}
-                                            <img src="{{ url_for('banner_image', filename=banner.image) }}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 5px;">
+                                            <img src="{{ media_url(banner.image, 'banner') }}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 5px;">
                                         {% else %}
                                             <i class="fas fa-image fa-2x text-muted"></i>
                                         {% endif %}
@@ -3721,7 +3830,7 @@ def admin_edit_banner(banner_id):
                 <div class="card-body p-4">
                     {% if banner.image and banner.image != 'default_banner.jpg' %}
                     <div class="text-center mb-4">
-                        <img src="{{ url_for('banner_image', filename=banner.image) }}" style="max-width: 100%; max-height: 200px; border-radius: 10px;">
+                        <img src="{{ media_url(banner.image, 'banner') }}" style="max-width: 100%; max-height: 200px; border-radius: 10px;">
                     </div>
                     {% endif %}
                     
@@ -3865,7 +3974,7 @@ def admin_cars():
                                     <td>{{ car.id }}</td>
                                     <td>
                                         {% if car.image and car.image != 'default_car.jpg' %}
-                                            <img src="{{ url_for('car_image', filename=car.image) }}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 5px;">
+                                            <img src="{{ media_url(car.image, 'car') }}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 5px;">
                                         {% else %}
                                             <i class="fas fa-car fa-2x text-muted"></i>
                                         {% endif %}
@@ -4104,7 +4213,7 @@ def admin_edit_car(car_id):
                 <div class="card-body p-4">
                     {% if car.image and car.image != 'default_car.jpg' %}
                     <div class="text-center mb-4">
-                        <img src="{{ url_for('car_image', filename=car.image) }}" style="max-width: 100%; max-height: 200px; border-radius: 10px;">
+                        <img src="{{ media_url(car.image, 'car') }}" style="max-width: 100%; max-height: 200px; border-radius: 10px;">
                     </div>
                     {% endif %}
                     
@@ -4292,23 +4401,23 @@ def admin_view_booking(booking_id):
                     <h5 class="mb-3">Documents:</h5>
                     <div class="row">
                         <div class="col-md-3 mb-2">
-                            <a href="{{ url_for('uploaded_file', filename=booking.id_front) }}" target="_blank" class="btn btn-outline-primary w-100">
+                            <a href="{{ media_url(booking.id_front, 'upload') }}" target="_blank" class="btn btn-outline-primary w-100">
                                 <i class="fas fa-id-card"></i> ID Front
                             </a>
                         </div>
                         <div class="col-md-3 mb-2">
-                            <a href="{{ url_for('uploaded_file', filename=booking.id_back) }}" target="_blank" class="btn btn-outline-primary w-100">
+                            <a href="{{ media_url(booking.id_back, 'upload') }}" target="_blank" class="btn btn-outline-primary w-100">
                                 <i class="fas fa-id-card"></i> ID Back
                             </a>
                         </div>
                         <div class="col-md-3 mb-2">
-                            <a href="{{ url_for('uploaded_file', filename=booking.license_file) }}" target="_blank" class="btn btn-outline-primary w-100">
+                            <a href="{{ media_url(booking.license_file, 'upload') }}" target="_blank" class="btn btn-outline-primary w-100">
                                 <i class="fas fa-id-card"></i> License
                             </a>
                         </div>
                         {% if booking.payment_screenshot %}
                         <div class="col-md-3 mb-2">
-                            <a href="{{ url_for('uploaded_file', filename=booking.payment_screenshot) }}" target="_blank" class="btn btn-outline-success w-100">
+                            <a href="{{ media_url(booking.payment_screenshot, 'upload') }}" target="_blank" class="btn btn-outline-success w-100">
                                 <i class="fas fa-receipt"></i> Payment
                             </a>
                         </div>
